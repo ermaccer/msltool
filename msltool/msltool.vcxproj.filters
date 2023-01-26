@@ -23,5 +23,13 @@
     <ClInclude Include="msl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="mst.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
