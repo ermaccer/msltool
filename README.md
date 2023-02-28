@@ -14,3 +14,4 @@ Run without params to get usage if building, else drag'n'drop .msl or .mst.
 | table3.cfg | Unknown |
 | table4.cfg | Actual sound entries and specific properties |
 | table5.cfg | References to table4 to use in executable sound table |
+
