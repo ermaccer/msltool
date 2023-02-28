@@ -8,7 +8,7 @@ Run without params to get usage if building, else drag'n'drop .msl or .mst.
 # Tables
 
 | Name | Desc |
-| --- | |--- |
+| --- | | --- |
 | sounds.cfg | Sounds to load and their frequency |
 | table2.cfg | Unknown |
 | table3.cfg | Unknown |
