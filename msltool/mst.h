@@ -69,3 +69,16 @@ struct table4_entry {
 	int field76;
 
 };
+
+struct table4_extraentry {
+	int field0;
+	int field4;
+	int field8;
+	int field12;
+	int field16;
+	int field20;
+	int field24;
+	int field28;
+	int field32;
+	int field36;
+};

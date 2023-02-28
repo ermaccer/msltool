@@ -149,7 +149,7 @@ int main(int argc, char* argv[])
                 std::filesystem::create_directory(folder);
                 std::filesystem::current_path(folder);
 
-                std::cout << "INFO: Processing table 1 (sounds)" << std::endl;
+                std::cout << "INFO: Processing table 1 (sounds to load)" << std::endl;
                 pFile.seekg(mst.soundsPointer, pFile.beg);
 
                 std::vector<sound_entry> sounds;
@@ -172,7 +172,7 @@ int main(int argc, char* argv[])
 
                 std::vector<table2_entry> t2Data;
                 {
-                    for (int i = 0; i < mst.sounds; i++)
+                    for (int i = 0; i < mst.table2Entries; i++)
                     {
                         table2_entry t2;
                         pFile.read((char*)&t2, sizeof(table2_entry));
@@ -189,7 +189,7 @@ int main(int argc, char* argv[])
 
                 std::vector<table3_entry> t3Data;
                 {
-                    for (int i = 0; i < mst.sounds; i++)
+                    for (int i = 0; i < mst.table2Entries; i++)
                     {
                         table3_entry t3;
                         pFile.read((char*)&t3, sizeof(table3_entry));
@@ -205,20 +205,58 @@ int main(int argc, char* argv[])
                 pFile.seekg(mst.table4Pointer, pFile.beg);
 
                 std::vector<table4_entry> t4Data;
+                std::vector<table4_extraentry> t4DataE;
                 {
-                    for (int i = 0; i < mst.sounds; i++)
+                    for (int i = 0; i < mst.table2Entries; i++)
                     {
                         table4_entry t4;
                         pFile.read((char*)&t4, sizeof(table4_entry));
                         t4Data.push_back(t4);
+
+                        table4_extraentry e = {};
+
+                        if (t4.field48 == 2)
+                        {
+                            pFile.read((char*)&e, sizeof(table4_extraentry));
+                        }
+
+                        t4DataE.push_back(e);
                     }
                     std::ofstream oData("table4.cfg", std::ofstream::out);
 
-                    for (auto& t4 : t4Data)
-                        oData << t4.soundID<< " " << t4.field2 << " " << t4.field4 << " " << t4.field8 << " " << t4.field12 << " " << t4.field16 << " " << t4.field20 << " " << t4.field24 << " "
-                        << t4.field28 << " " << t4.field32 << " " << t4.field36 << " " << t4.field40 << " " << t4.field44 << " " << t4.field48 << " " << t4.field52 << " " << t4.field56 << " "
-                        << t4.field60 << " " << t4.field64 << " " << t4.field68 << " " << t4.field72 << " " << t4.field76 << " "
-                        << std::endl;
+                    for (int i = 0; i < t4Data.size(); i++)
+                    {
+                        table4_entry t4 = t4Data[i];
+                        oData << t4.soundID << " " << t4.field2 << " " << t4.field4 << " " << t4.field8 << " " << t4.field12 << " " << t4.field16 << " " << t4.field20 << " " << t4.field24 << " "
+                            << t4.field28 << " " << t4.field32 << " " << t4.field36 << " " << t4.field40 << " " << t4.field44 << " " << t4.field48 << " " << t4.field52 << " " << t4.field56 << " "
+                            << t4.field60 << " " << t4.field64 << " " << t4.field68 << " " << t4.field72 << " " << t4.field76 << " ";
+                        
+                        if (t4.field48 == 2)
+                        {
+                            table4_extraentry e4 = t4DataE[i];
+                            oData << e4.field0 << " " << e4.field4 << " " << e4.field8 << " " << e4.field12 << " " << e4.field16 << " " << e4.field20 << " " << e4.field24 << " "
+                                << e4.field28 << " " << e4.field32 << " " << e4.field36 << std::endl;;
+                        }
+                        else
+                            oData << std::endl;
+                    }
+                }
+
+                std::cout << "INFO: Processing table 5" << std::endl;
+                pFile.seekg(mst.listPointer, pFile.beg);
+                std::vector<short> listData;
+                {
+                    for (int i = 0; i < mst.table3Entries; i++)
+                    {
+                        short id;
+                        pFile.read((char*)&id, sizeof(short));
+                        listData.push_back(id);
+                    }
+
+                    std::ofstream oData("table5.cfg", std::ofstream::out);
+
+                    for (auto& id : listData)
+                        oData << id << std::endl;
                 }
             }
         }
@@ -264,6 +302,8 @@ int main(int argc, char* argv[])
                std::vector<table2_entry> table2;
                std::vector<table3_entry> table3;
                std::vector<table4_entry> table4;
+               std::vector<table4_extraentry> table4E;
+               std::vector<short> table5;
                std::filesystem::current_path(input);
 
 
@@ -366,7 +406,7 @@ int main(int argc, char* argv[])
                                    continue;
 
                                table4_entry t4 = {};
-
+                               table4_extraentry e4 = {};
                                sscanf_s(szLine, "%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d",
                                    &t4.soundID, &t4.field2, &t4.field4, &t4.field8,
                                    &t4.field12, &t4.field16, &t4.field20, &t4.field24,
@@ -375,7 +415,22 @@ int main(int argc, char* argv[])
                                    &t4.field60, &t4.field64, &t4.field68, &t4.field72,
                                    &t4.field76);
 
+                               if (t4.field48 == 2)
+                               {
+
+                                   sscanf_s(szLine, "%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d",
+                                       &t4.soundID, &t4.field2, &t4.field4, &t4.field8,
+                                       &t4.field12, &t4.field16, &t4.field20, &t4.field24,
+                                       &t4.field28, &t4.field32, &t4.field36, &t4.field40,
+                                       &t4.field44, &t4.field48, &t4.field52, &t4.field56,
+                                       &t4.field60, &t4.field64, &t4.field68, &t4.field72,
+                                       &t4.field76, &e4.field0, &e4.field4, &e4.field8,
+                                       &e4.field12, &e4.field16, &e4.field20, &e4.field24,
+                                       &e4.field28, &e4.field32, &e4.field36);
+                               }
+
                                table4.push_back(t4);
+                               table4E.push_back(e4);
                            }
                            fclose(pFile);
                        }
@@ -386,17 +441,52 @@ int main(int argc, char* argv[])
                        }
                    }
 
+                   {
+                       FILE* pFile;
+                       fopen_s(&pFile, "table5.cfg", "rb");
+
+                       if (pFile)
+                       {
+                           char szLine[512] = {};
+
+                           while (fgets(szLine, sizeof(szLine), pFile))
+                           {
+                               if (szLine[0] == ';' || szLine[0] == ';' || szLine[0] == '\n')
+                                   continue;
+
+                               short id;
+
+                               sscanf_s(szLine, "%d", &id);
+
+                               table5.push_back(id);
+                           }
+                           fclose(pFile);
+                       }
+                       else
+                       {
+                           std::cout << "ERROR: Could not open \"table5.cfg\"!" << std::endl;
+                           return 0;
+                       }
+                   }
+
                }
 
                // designed for announcr mostly
                int soundsSize = sizeof(sound_entry) * sounds.size();
                int table2Size = sizeof(table2_entry) * table2.size();
-               int table3Size = sizeof(table3_entry) * sounds.size();
-               int table4Size = sizeof(table4_entry) * sounds.size();
-               int listSize = sizeof(short) * sounds.size();
+               int table3Size = sizeof(table3_entry) * table3.size();
+               int table4Size = 0;
+               for (auto& t4 : table4)
+               {
+                   table4Size += sizeof(table4_entry);
+                   if (t4.field48 == 2)
+                       table4Size += sizeof(table4_extraentry);
+               }
+
+               int listSize = sizeof(short) * table5.size();
                mst.sounds = sounds.size();
-               mst.table2Entries = sounds.size();
-               mst.table3Entries = mst.sounds;
+               mst.table2Entries = table3.size();
+               mst.table3Entries = table5.size();
 
 
                int pointer = sizeof(mst_header);
@@ -446,8 +536,20 @@ int main(int argc, char* argv[])
 
                // write t4
 
-               for (auto& t4 : table4)
+               for (int i = 0; i < table4.size(); i++)
+               {
+                   table4_entry t4 = table4[i];
                    oFile.write((char*)&t4, sizeof(table4_entry));
+
+                   if (t4.field48 == 2)
+                   {
+                       table4_extraentry e4 = table4E[i];
+                       oFile.write((char*)&e4, sizeof(table4_extraentry));
+                   }
+               }
+
+               for (auto& t4 : table4)
+
 
                // write t4 pad
                padSize = makePad(table4Size, MST_PAD_VALUE) - table4Size;
@@ -456,11 +558,10 @@ int main(int argc, char* argv[])
 
                // write list
 
-               for (int i = 0; i < sounds.size(); i++)
-               {
-                   short id = i + 1;
+
+               for (auto& id : table5)
                    oFile.write((char*)&id, sizeof(short));
-               }
+
                // write list pad
                padSize = makePad(listSize, MST_PAD_VALUE) - listSize;
                padBuff = std::make_unique<char[]>(padSize);
